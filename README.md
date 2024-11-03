@@ -36,7 +36,7 @@ The mock data generator script creates a sample directory structure for testing 
 ### Running the Mock Generator
 To get details on all available parameters and options, use the --help flag:
 ```bash
-python kdi_mock.py --help
+python3 kdi_mock.py --help
 ```
 ### Available Parameters
 The script is highly customizable, with the following parameters available for defining the mock data structure:
