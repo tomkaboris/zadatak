@@ -21,6 +21,7 @@ This PowerShell script automates the generation of daily statements (KDI) in a Z
 ## Requirements
 - The script requires **PowerShell (pwsh)** version 7.4.6 or higher.
 - The script expects the folder **izvodi** to be located in the $HOME/izvodi directory, as it will use this as directory for processing files.
+
 To install PowerShell, see the [official installation guide](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell) for Windows, Linux, and macOS.
 
 ## Usage
