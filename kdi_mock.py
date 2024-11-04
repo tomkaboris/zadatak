@@ -48,7 +48,7 @@ def generate_partije_json(id_number, partije):
 def insert_random_partije_json(args, org_partije):
     """In existing *_partije.json, randomly add partije from other orgIDs"""
     base_dir = args.base_dir
-    for num_org in range(args.num_orgs):
+    for _ in range(args.num_orgs):
         random_id = random.sample(list(org_partije.keys()), 1)
 
         for id_num, partije in org_partije.items():
