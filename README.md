@@ -41,19 +41,21 @@ python3 kdi_mock.py --help
 ### Available Parameters
 The script is highly customizable, with the following parameters available for defining the mock data structure:
 ```bash
+usage: kdi_mock.py [-h] [--base_dir BASE_DIR] [--num_ids NUM_IDS] [--id_length ID_LENGTH] [--start_date START_DATE] [--end_date END_DATE] [--min_dates MIN_DATES] [--max_dates MAX_DATES]  [--min_partija MIN_PARTIJA] [--max_partija MAX_PARTIJA] [--num_orgs NUM_ORGS] [--per_acc PER_ACC]
+
 Generate mock data directory structure.
 
 optional arguments:
-  -h, --help            show this help message and exit
-  --base_dir    BASE_DIR    Base directory to create. [Default (str): izvodi]
-  --num_ids     NUM_IDS     Number of ID directories to create. [Default (int): 5]
-  --id_length   ID_LENGTH   Length of the numeric ID. [Default (int): 5]
-  --start_date START_DATE   Start date for date directories (YYYY-MM-DD). [Default (str): 2024-09-10]
-  --end_date END_DATE       End date for date directories (YYYY-MM-DD). [Default (str): 2024-11-10]
-  --min_dates MIN_DATES     Minimum number of date directories per ID. [Default (int): 2]
-  --max_dates MAX_DATES     Maximum number of date directories per ID. [Default (int): 15]
-  --min_partija MIN_PARTIJA Minimum number of partije per date directory. [Default (int): 2]
-  --max_partija MAX_PARTIJA Maximum number of partije per date directory. [Default (int): 6]
-  --num_orgs NUM_ORGS       The number of possible organizations that will have access to others depending on the percentage of probability. [Default (int): 2]
-  --per_acc PER_ACC         Percentage of merge probability with other organisations (0.3 = 30 percent). [Default (float): 0.5]
+  -h, --help                show this help message and exit
+  --base_dir    BASE_DIR    Base directory to create (str). Default: izvodi
+  --num_ids     NUM_IDS     Number of ID directories to create (int). Default: 5
+  --id_length   ID_LENGTH   Length of each numeric ID (int). Default: 5
+  --start_date  START_DATE  Start date for date directories (YYYY-MM-DD). Default: 2024-09-10
+  --end_date    END_DATE    End date for date directories (YYYY-MM-DD). Default: 2024-11-10
+  --min_dates   MIN_DATES   Min number of date directories per ID (int). Default: 2
+  --max_dates   MAX_DATES   Max number of date directories per ID (int). Default: 15
+  --min_partija MIN_PARTIJA Min number of partije per date directory (int). Default: 2
+  --max_partija MAX_PARTIJA Max number of partije per date directory (int). Default: 6
+  --num_orgs    NUM_ORGS    Number of organizations with potential access based on merge probability (int). Default: 2
+  --per_acc     PER_ACC     Merge probability with other organizations (float, e.g., 0.5 = 50.percent). Default: 0.5
 ```
