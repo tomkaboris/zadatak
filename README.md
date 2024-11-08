@@ -1,205 +1,61 @@
-# DevOps zadatak - Izvodi
+# Izvodi (KDI) Generator
+This PowerShell script automates the generation of daily statements (KDI) in a ZIP archive format. Each archive includes all unpacked daily records for a specified date, covering all active records for your organization as well as any accessible records from other organisations.
 
-## Kontekst
+## Table of Contents
+- [Overview](#overview)
+- [Requirements](#requirements)
+- [Usage](#usage)
+- [Script Details](#script-details)
+- [Mock Data Generator](#mock-data-generator)
+  
+## Overview
+- The script performs five steps to generate the KDI ZIP archive. It operates from a designated izvodi base folder, sequentially processing files and directories to create a consolidated archive.
 
-Banka vodi račune više različitih organizacija. Svaka organizacija može imati više računa. Banka ima obavezu da generiše dnevne izvode za sve račune i da ih služi za download krajnjim korisnicima. Na kraju svakog dana, servis banke generiše dnevni izvod za sve račune koji se u njoj vode i kopira ih u određeni folder definisane strukture gde ih čuva najviše 2 meseca i služi putem Nginx web servera.
+### Workflow Steps:
+- **Step 1:** Extract ZIP files in organization directories.
+- **Step 2:** Extract associated organization ZIP files based on JSON content.
+- **Step 3:** Delete any existing ZIP files with *_sve-partije  if they exists.
+- **Step 4:** Compress each *_sve-partije folder into a ZIP file.
+- **Step 5:** Delete each *_sve-partije folder after compression.
+ 
+## Requirements
+- The script requires **PowerShell (pwsh)** version 7.4.6 or higher.
+- The script expects the folder **izvodi** to be located in the $HOME/izvodi directory, as it will use this as directory for processing files.
 
-Račun organizacije je formata `<id-banke>-<partija>-<kontrolni-broj>`, npr. `840-0000000001620-53`. Svaki račun pripada tačno jednoj organizaciji, međutim neke organizacije mogu imati uvid u račune koji im ne pripadaju.
+To install PowerShell, see the [official installation guide](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell) for Windows, Linux, and macOS.
 
-### Struktura foldera
-
-1. Root folder `izvodi` na Linux serveru sadrži sub-folder za svaku organizaciju, imenovan po matičnom broju organizacije (MB)
-1. Svaki MB folder sadrži listu datuma, imenovanih po ISO8601 formatu
-1. U svakom datumu nalaze se partije računa koji pripadaju toj organizaciji, svaki imenovan `<partija>.<format>.zip` pri čemu:
-    1. Partija ima tačno 13 numerika
-    1. Format izvoda može biti PDF, JSON ili TXT i banka uvek pravi sve formate
-    1. Zip arhiva sadrži tačno 1 fajl, po imenu `<partija>.<format>`
-1. Bilo gde u hijerarhiji se mogu naći drugi fajlovi i direktorijumi i nije bitno koje su prirode, mogu se ignorisati
-1. Folder svake organizacije sadrži fajl `<mb>_sve-partije.json` koji sadrži listu svih partija te organizacije koje banka vodi, kao i partije drugih organizacija u istoj banci u koja ova ima uvid i čiji izvodi se takođe nalaze u opisanoj strukturi foldera
-
-Kao drvo, struktura izgleda na sledeći način:
-
-```
-izvodi/
-  MB1/
-    datum11/
-        partijaN.pdf.zip
-        partijaN.txt.zip
-        partijaN.json.zip
-        ...
-        partijaM.pdf.zip
-        ...
-    datum12/
-        partijaX.txt.zip
-        ...
-    MB1_partije.json
-  MB2/
-    datum21/
-    ...
-    MB2_partije.json
-...
+## Usage
+Run the script from your terminal as follows:
+```bash
+pwsh kdi.ps1
 ```
 
-Pored navedenog, važe i sledeća pravila:
+## Mock Data Generator
+The mock data generator script creates a sample directory structure for testing the KDI generation process. It generates randomized data that conforms to the required schema. This script is written in Python and requires version 3.9.13 or higher.
 
-1. Izvod za bilo koju partiju se ne proizvodi ukoliko nije bilo aktivnosti tog dana na toj partiji
-1. Folder za datum ne mora da postoji ako nijedna partija koja pripada datoj organizaciji nije imala aktivnost tog dana
-1. Folder organizacije ne mora da postoji ako nije bilo aktivnosti nijedne partije te organizacije u protekla 2 meseca
-
-### Struktura indeksa partija
-
-Fajl `<mb>_partije.json` sadrži listu svih partija u koje organizacija sa matičnim brojem MB ima uvid kao i listu njenih sopstvenih partija (predstavlja indeks partija organizacije):
-
+### Running the Mock Generator
+To get details on all available parameters and options, use the --help flag:
+```bash
+python3 kdi_mock.py --help
 ```
-{
-    "MB": [ "partija11", "partija12", ..., "partija1N"],
-    "MBX": [ "partijaX1", "partijaX2", ..., "partijaXM"],
-    ...
-    "MBY": [ "partijaY1", ..., "partijaYJ" ]
-}
+### Available Parameters
+The script is highly customizable, with the following parameters available for defining the mock data structure:
+```bash
+usage: kdi_mock.py [-h] [--base_dir BASE_DIR] [--num_ids NUM_IDS] [--id_length ID_LENGTH] [--start_date START_DATE] [--end_date END_DATE] [--min_dates MIN_DATES] [--max_dates MAX_DATES]  [--min_partija MIN_PARTIJA] [--max_partija MAX_PARTIJA] [--num_orgs NUM_ORGS] [--per_acc PER_ACC]
+
+Generate mock data directory structure.
+
+optional arguments:
+  -h, --help                show this help message and exit
+  --base_dir    BASE_DIR    Base directory to create (str). Default: izvodi
+  --num_ids     NUM_IDS     Number of ID directories to create (int). Default: 5
+  --id_length   ID_LENGTH   Length of each numeric ID (int). Default: 5
+  --start_date  START_DATE  Start date for date directories (YYYY-MM-DD). Default: 2024-09-10
+  --end_date    END_DATE    End date for date directories (YYYY-MM-DD). Default: 2024-11-10
+  --min_dates   MIN_DATES   Min number of date directories per ID (int). Default: 2
+  --max_dates   MAX_DATES   Max number of date directories per ID (int). Default: 15
+  --min_partija MIN_PARTIJA Min number of partije per date directory (int). Default: 2
+  --max_partija MAX_PARTIJA Max number of partije per date directory (int). Default: 6
+  --num_orgs    NUM_ORGS    Number of organizations with potential access based on merge probability (int). Default: 2
+  --per_acc     PER_ACC     Merge probability with other organizations (float, e.g., 0.5 = 50.percent). Default: 0.5
 ```
-
-Indeks lista organizacije i niz partija koje im pripadaju (nalaze se u njihovom folderu u ranije pomenutoj strukturi)
-
-1. prvi navedeni MB je onaj od organizacije u čijem se folderu indeks partija nalazi (i koji se nalazi u imenu fajla)
-    1. lista partija u nizu su uvek **sve** partije koje pripadaju toj organizaciji (izvodi ovih partija se nalaze u datumskim folderima te organizacije, ukoliko postoje na taj dan)
-1. svi ostali MB predstavljaju druge organizacije koje imaju račune u istoj banci
-    1. lista partija u nizu su uvek **subset** partija koje pripadaju tim drugim organizacijama, ali su date prvoj organizaciji na uvid
-
-## Zadatak 1
-
-Za svaku organizaciju, na bilo kakav način, kreirati novi **kompletan dnevni izvod** (KDI) koji predstavlja ZIP arhivu koja sadrži otpakovane sve dnevne izvode za konkretni datum. KDI sadrži sve sopstvene partije organizacije kao i "tuđe partije" u koje ta organizacija ima uvid, a imali su aktivnost tog dana:
-
-**Fajl**: `MB_sve-partije.zip`:
-```
-partija1.pdf
-partija1.txt
-partija1.json
-partija2.pdf
-...
-partijaN.pdf
-...
-```
-
-1. Za organizaciju MB i datum, izvod se nalazi na putanji `mb/datum/mb_sve-partije.zip`
-1. Arhiva sadrži sve formate svih partija koje su imale aktivnost, ukoliko postoje za taj dan, inače se ne pravi
-1. Obezbediti idempotentnost
-    1. Ponavljanje procesa bilo kada ne pravi razliku ako nije bilo promena fajl sistema
-    2. Prekidanje operacije usred posla i ponovno pokretanje će nastaviti dalje obradu
-    3. Obrisani KDI će biti rekreiran na ponovnom pokretanju
-3. **Kritično je obezbediti da se greškom u KDI ne upakuju partije u koje organizacija nema uvid**
-
-## Zadatak 2
-
-Napraviti skriptu koja generiše mock navedene šeme podataka. Skripta bi se koristila za testiranje rešenja zadatka.
-
-Skripta treba biti parametrizovana u što je većoj meri i da randomizuje podatke tako da oni zadovoljavaju navedene strukture.
-
-## Pretpostavke
-
-1. Alat/skript se izvršava na Linux serveru gde se nalaze izvodi i ima read/write prava pristupa root folderu izvoda
-    1. Dizajniran je za upotrebu putem cron job-a
-1. Instaliran je pwsh i podešen bez ikakvih ograničenja
-
-## Dodatni zadaci
-
-1. Napisati `README.md` o svrsi, funkcionalnostima, opisom parametara, preduslova, napomenama itd. (ciljna grupa IT)
-1. Alat/skripta proizvodi detaljni log sprovedenih operacija
-
-## Primer
-
-U sledećem primeru prikazano je zbog konzciznosti samo nekoliko datuma, inače, ne postoji datum koji je stariji od 2 meseca.
-
-```
-izvodi/
-  08926/
-    2022-03-03/
-      0000000026640.json.zip
-      0000000026640.pdf.zip
-      0000000026640.txt.zip
-      0000001916740.json.zip
-      0000001916740.pdf.zip
-      0000001916740.txt.zip
-    2022-02-28/
-      0000001916740.json.zip
-      0000001916740.pdf.zip
-      0000001916740.txt.zip
-      image.png
-    2022-02-12/
-      0000000026640.json.zip
-      0000000026640.pdf.zip
-      0000000026640.txt.zip
-    08926_partije.json
-  10523/
-    2022-03-02/
-      2340711181843.json.zip
-      2340711181843.pdf.zip
-      2340711181843.txt.zip
-      2340731141843.json.zip
-      2340731141843.pdf.zip
-      2340731141843.txt.zip
-      4073114184323.json.zip
-      4073114184323.pdf.zip
-      4073114184323.txt.zip
-    2022-02-28/
-      2340731241843.json.zip
-      2340731241843.pdf.zip
-      2340731241843.txt.zip
-    2022-02-27/
-      2340711181843.json.zip
-      2340711181843.pdf.zip
-      2340711181843.txt.zip
-      2340714543843.json.zip
-      2340714543843.pdf.zip
-      2340714543843.txt.zip
-      2340714547843.json.zip
-      2340714547843.pdf.zip
-      2340714547843.txt.zip
-      2340731141843.json.zip
-      2340731141843.pdf.zip
-      2340731141843.txt.zip
-      4073114184323.json.zip
-      4073114184323.pdf.zip
-      4073114184323.txt.zip
-      notes.txt
-    10523_partije.json
-  12506/
-    2022-02-01/
-      5061224184323.txt.zip
-      5061224184323.pdf.zip
-      5061224184323.json.zip
-    12506_partije.json
-```
-
-Fajl: `08926_partije.json`
-```json
-{
-"08926": ["0000000026640", "0000001916740"],
-"10523": ["2340711181843", "2340711182843", "2340711183843", "2340711184843", "2340731241843"]
-}
-```
-
-U ovom primeru su prikazane 3 organizacije, sa MB `08926`, `10523` i `12506`. Organizacija sa MB `08926` ima svoje partije `0000000026640`, `0000001916740` i dat joj je uvid u 4 partije organizacije `10523`. U slučaju ove organizacije, rezultat zadatka su 3 KDI za tri navedena datuma sa sledećim sadržajem:
-
-```
-izvodi/08926/2022-03-03/08926_sve-partije.zip
-  0000000026640.json
-  0000000026640.pdf
-  0000000026640.txt
-  0000001916740.json
-  0000001916740.pdf
-  0000001916740.txt
-izvodi/08926/2022-02-28/08926_sve-partije.zip
-  0000001916740.json
-  0000001916740.pdf
-  0000001916740.txt
-  2340731241843.json
-  2340731241843.pdf
-  2340731241843.txt
-izvodi/08926/2022-02-12/08926_sve-partije.zip
-  0000000026640.json
-  0000000026640.pdf
-  0000000026640.txt
-```
-
-Nakon što je operacija završena, svaka organizacija ima KDI za svaki dan, sem ako tog dana nije bilo aktivnosti.
